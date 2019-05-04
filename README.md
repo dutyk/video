@@ -18,3 +18,6 @@ Spring Boot、Mybatis、HikariCP、Spring Security、OAuth2、Thymeleaf、Semant
 How to Run?
 ------
 [初章](http://www.jianshu.com/p/aff05f5bd8a1) | [部署](http://www.jianshu.com/p/8a9ed762caf7) | Next
+
+尝试将redis换为使用本地内存，整合优酷，乐视，腾讯，爱奇艺视频源
+------
