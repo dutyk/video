@@ -4,4 +4,4 @@ video.iml
 
 .idea
 
-.gitignore
+target/

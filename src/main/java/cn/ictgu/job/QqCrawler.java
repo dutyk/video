@@ -4,6 +4,7 @@ import cn.ictgu.bean.response.Video;
 import cn.ictgu.tools.JsoupUtils;
 import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.apache.commons.lang.StringUtils;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
@@ -22,12 +23,12 @@ import java.util.List;
 @AllArgsConstructor
 public class QqCrawler {
 
-    private static final String HOME_PAGE_PC = "https://v.qq.com/";
-    private static final String HOME_PAGE_PHONE_TV = "http://v.qq.com/x/list/tv";
-    private static final String HOME_PAGE_PHONE_MOVIE = "http://v.qq.com/x/list/movie";
-    private static final String HOME_PAGE_PHONE_CARTOON = "http://v.qq.com/x/list/cartoon";
-    private static final String HOME_PAGE_PHONE_RECOMMEND = "http://v.qq.com/x/list/variety";
-    private static final String TAG = "QQ";
+    public static final String HOME_PAGE_PC = "https://v.qq.com/";
+    public static final String HOME_PAGE_PHONE_TV = "http://v.qq.com/x/list/tv";
+    public static final String HOME_PAGE_PHONE_MOVIE = "http://v.qq.com/x/list/movie";
+    public static final String HOME_PAGE_PHONE_CARTOON = "http://v.qq.com/x/list/cartoon";
+    public static final String HOME_PAGE_PHONE_RECOMMEND = "http://v.qq.com/x/list/variety";
+    public static final String TAG = "QQ";
 
     private final RedisSourceManager redisSourceManager;
 

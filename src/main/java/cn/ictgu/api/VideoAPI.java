@@ -7,6 +7,7 @@ import cn.ictgu.parse.ParserManager;
 import cn.ictgu.parse.video.Tencent;
 import cn.ictgu.tools.UrlUtils;
 import lombok.AllArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
@@ -16,6 +17,7 @@ import java.util.List;
 
 @RestController
 @AllArgsConstructor
+@Log4j2
 public class VideoAPI {
 
     private final ParserManager parseManager;
@@ -26,7 +28,9 @@ public class VideoAPI {
     @GetMapping("/api/video")
     public Video play(HttpServletRequest request) {
         String url = request.getParameter("v");
+
         url = url.replaceAll("\\?(spm|from).*", "");
+        log.info("parse video {}", url);
         return (Video) parseManager.parse(url);
     }
 
@@ -37,6 +41,7 @@ public class VideoAPI {
     public List episodes(HttpServletRequest request) {
         String url = request.getParameter("v");
         url = url.replaceAll("\\?(spm|from).*", "");
+        log.info("parse episode {}", url);
         String key = UrlUtils.getTopDomain(url);
         Parser videoParse = parseManager.getParser(key);
         return videoParse.parseEpisodes(url);

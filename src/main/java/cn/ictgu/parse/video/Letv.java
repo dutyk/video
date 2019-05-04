@@ -23,7 +23,7 @@ import java.util.regex.Pattern;
  */
 public class Letv implements Parser<Video> {
 
-    private final static String ROUTE = "http://player-pc.le.com/mms/out/video/playJson.json?platid=3&splatid=304&tss=no&id=%s&detect=1&dvtype=1300&accessyx=1&domain=www.le.com&tkey=%s&devid=b452a9ce08e7d08370dcdf12aba639c1&source=1001&lang=cn&region=cn&isHttps=0";
+    private final static String ROUTE = "http://player-pc.le.com/mms/out/video/playJson.json?id=%s&platid=1&splatid=105&format=1&tkey=%s&domain=www.le.com&dvtype=1000&devid=8CCF9F79CE4F6902626BDDBD8207E2CE08BE7874&region=cn&source=1000&accessyx=1";
     private final static String VIP_LOCATION = "%s%s&token=%s&uid=67945963&format=1&jsonp=vjs_149067353337651&expect=3&p1=0&p2=06&termid=2&ostype=macos&hwtype=un&uuid=1891087902108532_1&vid=%s&";
     private static final String LETV_VIDEOS = "http://d.api.m.le.com/apipccard/dynamic?cid=2&vid=%s&platform=pc&isvip=1&type=episode,Cotherlist";
     private final static String VID_REGEX = "([0-9]+)\\.html";
@@ -34,17 +34,22 @@ public class Letv implements Parser<Video> {
         Video video = new Video();
         video.setValue(url);
         String vid = this.matchVid(url);
-        String routeUrl = String.format(ROUTE, vid, getTkey());
+        String routeUrl = String.format(ROUTE, vid, getTkey((int)(new Date().getTime() / 1000)));
         Document document = JsoupUtils.getDocWithPC(routeUrl);
         JSONObject object = JSONObject.parseObject(document.text());
-        JSONObject playurl = object.getJSONObject("msgs").getJSONObject("playurl");
+        JSONObject msgs = object.getJSONObject("msgs");
+
+        JSONObject playurl = msgs.getJSONObject("playurl");
+
         String title = playurl.getString("title");
         video.setTitle(title);
+
         String image = playurl.getString("pic").replace("120_90", "360_180");
         image = image.replace("http:", "");
         video.setImage(image);
         String domain = playurl.getJSONArray("domain").getString(0);
         String dispatch = getDispatch(playurl.getJSONObject("dispatch"));
+
         JSONObject yuanxian = object.getJSONObject("msgs").getJSONObject("yuanxian");
         String locationUrl;
         if (yuanxian != null) {
@@ -53,13 +58,19 @@ public class Letv implements Parser<Video> {
         } else {
             locationUrl = String.format(VIP_LOCATION, domain, dispatch, "", vid);
         }
+        video.setPlayUrl(getPlayUrl(locationUrl));
+
+        return video;
+    }
+
+    public String getPlayUrl(String locationUrl) {
         Document result = JsoupUtils.getDocWithPhone(locationUrl);
         String text = StringEscapeUtils.unescapeJava(result.text());
         text = text.replace("vjs_149067353337651(", "");
         text = text.replace(");", "");
         JSONObject videoJson = JSONObject.parseObject(text);
-        video.setPlayUrl(videoJson.getJSONArray("nodelist").getJSONObject(0).getString("location"));
-        return video;
+        String playUrl = videoJson.getJSONArray("nodelist").getJSONObject(0).getString("location");
+        return playUrl;
     }
 
     @Override
@@ -122,8 +133,7 @@ public class Letv implements Parser<Video> {
     /**
      *  乐视tkey算法
      */
-    private static String getTkey() {
-        int a = (int) (new Date().getTime() / 1000);
+    public static String getTkey(int a) {
         for (int i = 0; i < 8; i++) {
             int b = a >> 1;
             int c = (0x1 & a) << 31;
