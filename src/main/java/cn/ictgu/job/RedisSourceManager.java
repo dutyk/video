@@ -2,17 +2,22 @@ package cn.ictgu.job;
 
 import cn.ictgu.bean.response.Video;
 import com.alibaba.fastjson.JSONObject;
-import lombok.AllArgsConstructor;
+import com.google.common.cache.Cache;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 
 /**
  * 视频资源管理器
  */
 @Component
-@AllArgsConstructor
+@Slf4j
 public class RedisSourceManager {
 
   public final String VIDEO_PREFIX_HOME_CAROUSEL_KEY = "HOME_VIDEO_CAROUSEL";
@@ -23,14 +28,24 @@ public class RedisSourceManager {
   public final String VIDEO_PREFIX_HOME_TV_HOT_KEY = "HOME_VIDEO_TV_HOT";
   public final String VIDEOS_KEY = "VIDEOS";
 
-  private final StringRedisTemplate stringRedisTemplate;
+  @Value("${cache.local}")
+  private Boolean cacheLocal;
+
+  @Autowired
+  StringRedisTemplate stringRedisTemplate;
+
+  @Autowired
+  Cache cache;
 
   /**
    *  保存视频信息到 Redis
    */
   void saveVideos(String key, List<Video> videos){
     String value = JSONObject.toJSONString(videos);
-    stringRedisTemplate.opsForValue().set(key, value);
+    if(cacheLocal)
+      cache.put(key, value);
+    else
+      stringRedisTemplate.opsForValue().set(key, value);
   }
 
   /**
@@ -38,8 +53,22 @@ public class RedisSourceManager {
    */
   public List<Video> getVideosByKeyAndTag(String key, String tag){
     key = key + "_" + tag;
-    String cacheValue = stringRedisTemplate.opsForValue().get(key);
+    String cacheValue = "";
+
+    if(cacheLocal) {
+      try {
+        cacheValue = (String)cache.get(key, new Callable() {
+          @Override
+          public Object call() throws Exception {
+            log.info("get value");
+            return "";
+          }
+        });
+      }catch (ExecutionException e) {
+        log.error("get key occurs exception:{}", e);
+      }
+    }else
+      cacheValue = stringRedisTemplate.opsForValue().get(key);
     return JSONObject.parseArray(cacheValue, Video.class);
   }
-
 }

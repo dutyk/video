@@ -34,6 +34,7 @@ public class Tencent implements Parser<Video> {
         Video video = new Video();
         video.setValue(url);
         String vid = getVid(url);
+        log.info("[Tecent] parse url: {}, vid: {}", url, vid);
         JSONObject json = JSONObject.parseObject(videoInfo(vid));
         initVideo(video, json);
         return video;
@@ -72,6 +73,7 @@ public class Tencent implements Parser<Video> {
      * 解析腾讯视频片段
      */
     public Episode parsePart(String fileName, Integer index) {
+        log.info("[Tescent] parse fileName:{}, index:{}", fileName, index);
         Episode episode = new Episode();
         String[] params = fileName.split("\\.");
         String file = fileName.replace("1.mp4", index + ".mp4");
@@ -152,7 +154,7 @@ public class Tencent implements Parser<Video> {
                     .data("filename", filename).data("sdtfrom", SDTFROM)
                     .data("format", format).data("guid", GUID).ignoreContentType(true).get();
             String result = document.text().replace("QZOutputJson=", "");
-            System.out.println(result);
+            //System.out.println(result);
             result = result.substring(0, result.length() - 1);
             return JSONObject.parseObject(result).getString("key");
         } catch (IOException e) {
